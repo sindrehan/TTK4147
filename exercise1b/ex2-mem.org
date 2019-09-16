@@ -1,0 +1,35 @@
+* Task D
+allocating all the RAMs results in swap being used. Once the program
+exits the RAM is de-allocated, the swap seems to stay allocated.
+
+CHanging x_dim to 1000, results in 4ish GB of
+mem being used and no swap
+
+Changing x_dim to 10000, results in: memory
+not being filled all the way up, and no swap i used. Only 400MB of is
+used.
+
+The size of mem used seems to be proportional to the height of the
+matrix, as long as no elements of the matrix are set to a value.
+
+Wen thing the compiler is trying to be smart. The OS sees that this
+memory is allocated but not touched, so I will not allocate the memory
+before it is actually used.
+
+From stud-as: when allocating a block of memory the os usually
+prepares a part in the front of the block for use immediately, if the
+block is large the back part of the block will not be made available
+until it is needed in a dynamic fashion. So, when we allocate many
+small blocks more memory is used because most of it will be prepared
+for us by default. When we use larger blocks and don't write to the
+memory less memory is used because only parts of the blocks have been
+prepared , but if we write to all of the memory all
+of if will be used and the chunks will be of equal size.
+
+* task E
+we get a sysmalloc assertion runtime stuff
+
+setting -fsanitize=address we get a linker error instead.
+The -fsatitize is a linker option no a compiler option! now the output
+from asanitize is soo much more helpful and we get a detailed error
+telling us how the memory is fucked.
