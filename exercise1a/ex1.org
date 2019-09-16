@@ -1,0 +1,39 @@
+* Task A
+Which uses the most time and why?
+Busy wait with times() uses the most system time, because we as it to
+read the system time and place it in our buf all the time.
+** Sleep()
+1.001 total
+0 % everything
+** busy_wait() with clock_gettime(CLOCK_MONOTONIC,...)
+```
+void busy_wait(struct timespec t){
+ struct timespec now;
+ clock_gettime(CLOCK_MONOTONIC, &now);
+ struct timespec then = timespec_add(now, t);
+
+ while(timespec_cmp(now, then) < 0){
+ for(int i = 0; i < 10000; i++){}
+ clock_gettime(CLOCK_MONOTONIC, &now);
+ }
+}
+```
+
+takes 1.001
+100 % user
+** busy_wait() with times()
+takes 1.003 user 23% and system 77%
+* Task B
+we timed the laptop by sleeping 1 and checking how much rdtsc
+increased. It clocks as 1.99 GHz so we multiply by 0.5 to get nanosecs
+** using __rdtsc we get a average latency of 15ns.
+** using clock_gettime() is slower
+average acces time of 16ns
+** using times() we get 0 access time
+this is because the times timer has 100th of a second precission.
+** for 10 mill read takes 0.122 with _rdtsc, avg access latency = 12.2 ns
+** clock_gettime takes 0.287 avg access time = 28.7 ns
+** time takes 4.002 , avg access time = 400.s ns
+* Task C
+a context switch adds with gettime takes 450 ish nanoseconds, but
+highly variable. So it adds at least 400 +
