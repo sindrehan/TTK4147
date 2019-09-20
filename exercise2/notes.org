@@ -1,0 +1,11 @@
+* task 1
+we get local variables equal to 50m, but global variable is > 50M
+varying up to 60M
+* task 2
+counting to 5000 it uses 0.045 s with semaphores, without it uses
+0.006 - 0.014.
+
+total time is lower then sum of sys and user time because when running
+on multiple CPU cores the time is counted for each, but wall time is
+only counted once.
+* The double checked locking anti-pattern
