@@ -1,0 +1,9 @@
+#include <stdio.h>
+
+
+int main(void){
+  rt_print_auto_init(1);
+  mlockall(MCL_CURRENT | MCL_FUTURE);
+
+  return 0;
+}

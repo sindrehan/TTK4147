@@ -1,0 +1,79 @@
+#include <stdio.h>
+#include <native/task.h>
+#include <native/timer.h>
+#include <sys/mman.h>
+#include <rtdk.h>
+#include "io.h"
+#include <pthread.h>
+
+int set_cpu(int cpu_number){
+	cpu_set_t cpu;
+	CPU_ZERO(&cpu);
+	CPU_SET(cpu_number, &cpu);
+
+	return pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpu);
+}
+
+void print_hello(){
+  rt_task_set_periodic(NULL, TM_NOW, 1000000000);
+  while(1){
+    rt_task_wait_period(NULL);
+    rt_printf("Helloo\n");
+  }
+}
+
+void* disturbance(void * args){
+  set_cpu(0);
+  while(1){
+    asm volatile("" ::: "memory");
+  }
+}
+
+void response(void * args){
+  int pin = (int) args;
+  unsigned long duration = 100000000000;  // 10 second timeout
+  unsigned long endTime = rt_timer_read() + duration;
+
+  while(1){
+    if(io_read(pin) == 0){
+	io_write(pin, 0);
+	rt_timer_spin(5000);
+	io_write(pin,1);
+      }
+    
+    if(rt_timer_read() > endTime){
+      rt_printf("Time expired\n");
+      rt_task_delete(NULL);
+    }
+    if(rt_task_yield()){
+      rt_printf("Task failed to yield\n");
+      rt_task_delete(NULL);
+    }
+  } 
+}
+
+int main(void){
+  rt_print_auto_init(1);
+  mlockall(MCL_CURRENT | MCL_FUTURE);
+  
+  RT_TASK response_task_a, response_task_b, response_task_c;
+  rt_task_create(&response_task_a, "response_task_a", 0, 0, T_CPU(0));
+  rt_task_create(&response_task_b, "response_task_b", 0, 0, T_CPU(0));
+  rt_task_create(&response_task_c, "response_task_c", 0, 0, T_CPU(0));
+  rt_task_start(&response_task_a, &response, (void *) 1);
+  rt_task_start(&response_task_b, &response, (void *) 2);
+  rt_task_start(&response_task_c, &response, (void *) 3);
+  pthread_t d0, d1, d2, d3, d4, d5, d6, d7, d8, d9;
+    pthread_create(&d0, NULL, &disturbance, NULL);
+    pthread_create(&d1, NULL, &disturbance, NULL);
+    pthread_create(&d2, NULL, &disturbance, NULL);
+    pthread_create(&d3, NULL, &disturbance, NULL);
+    pthread_create(&d4, NULL, &disturbance, NULL);
+    pthread_create(&d5, NULL, &disturbance, NULL);
+    pthread_create(&d6, NULL, &disturbance, NULL);
+    pthread_create(&d7, NULL, &disturbance, NULL);
+    pthread_create(&d8, NULL, &disturbance, NULL);
+    pthread_create(&d9, NULL, &disturbance, NULL);
+  while(1){};
+  return 0;
+}
