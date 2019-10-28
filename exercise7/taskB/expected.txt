@@ -1,0 +1,9 @@
+x: sleep
+<: take resource
+>: release resource
+_: work
+
+L <-----___>
+M x_____
+H xx--------<__>
+
